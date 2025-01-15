@@ -1,0 +1,17 @@
+// This file must use UNIX Style End of Line (LF)
+*minimum = GUST_surface.min();
+*maximum = GUST_surface.max();
+GUST_surface = (GUST_surface - minimum) / (maximum - minimum) * 255.0;
+// Normalize TMP_surface to range [0, 255]
+minimum = TMP_surface.min();
+maximum = TMP_surface.max();
+TMP_surface = (TMP_surface - minimum) / (maximum - minimum) * 255.0;
+// Normalize PRES_surface to range [0, 255]
+minimum = PRES_surface.min();
+maximum = PRES_surface.max();
+PRES_surface = (PRES_surface - minimum) / (maximum - minimum) * 255.0;
+
+// Normalize PWAT_entireatmosphere_consideredasasinglelayer_ to range [0, 255]
+minimum = PWAT_entireatmosphere_consideredasasinglelayer_.min();
+maximum = PWAT_entireatmosphere_consideredasasinglelayer_.max();
+PWAT_entireatmosphere_consideredasasinglelayer_ = (PWAT_entireatmosphere_consideredasasinglelayer_ - minimum) / (maximum - minimum) * 255.0;

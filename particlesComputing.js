@@ -1,7 +1,7 @@
 import DataProcess from './dataProcess'
 import Util from './util'
 const Cesium = window.Cesium;
-const glslDirectory = '/static/glsl/';
+const glslDirectory = '/data/windy/glsl/';
 import CustomPrimitive from './customPrimitive'
 export default class ParticlesComputing {
   constructor(context, data, userInput, viewerParameters) {

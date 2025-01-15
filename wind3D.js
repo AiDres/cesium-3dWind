@@ -9,6 +9,7 @@ export default class Wind3D {
         this.camera = this.viewer.camera;
 
         this.panel = panel;
+        this.disableVisible = false;
 
         this.viewerParameters = {
             lonRange: new Cesium.Cartesian2(),
@@ -26,6 +27,7 @@ export default class Wind3D {
             // this.debug();
         });
         this.imageryLayers = this.viewer.imageryLayers;
+        this.visible = this.visible;
     }
 
     addPrimitives() {
@@ -37,6 +39,16 @@ export default class Wind3D {
         this.scene.primitives.add(this.particleSystem.particlesRendering.primitives.segments);
         this.scene.primitives.add(this.particleSystem.particlesRendering.primitives.trails);
         this.scene.primitives.add(this.particleSystem.particlesRendering.primitives.screen);
+        
+    }
+    removePrimitives() {
+        this.scene.primitives.remove(this.particleSystem.particlesComputing.primitives.calculateSpeed);
+        this.scene.primitives.remove(this.particleSystem.particlesComputing.primitives.updatePosition);
+        this.scene.primitives.remove(this.particleSystem.particlesComputing.primitives.postProcessingPosition);
+
+        this.scene.primitives.remove(this.particleSystem.particlesRendering.primitives.segments);
+        this.scene.primitives.remove(this.particleSystem.particlesRendering.primitives.trails);
+        this.scene.primitives.remove(this.particleSystem.particlesRendering.primitives.screen);
     }
 
     updateViewerParameters() {
@@ -60,38 +72,68 @@ export default class Wind3D {
 
     setupEventListeners() {
         const that = this;
-
+        let height = 0;
         this.camera.moveStart.addEventListener(() => {
-            that.scene.primitives.show = false;
+            // !this.disableVisible && this.visible(false);
+            height = this.viewer.camera.positionCartographic.height;
+            if(height < 25000) {
+                !this.disableVisible && this.visible(false);
+            } else {
+                !this.disableVisible && this.visible(true);
+            }
+        });
+        this.camera.moveEnd.addEventListener(this.throttle(() => {
+            if (height !== this.viewer.camera.positionCartographic.height) {
+                height = this.viewer.camera.positionCartographic.height;
+                that.updateViewerParameters();
+                that.particleSystem.applyViewerParameters(that.viewerParameters);
+                
+                height = this.viewer.camera.positionCartographic.height;
+            }
+            
+        }, 300));
+
+        let resized = false;
+        window.addEventListener("resize", () => {
+            resized = true;
+            !this.disableVisible && this.visible(false);
+            this.removePrimitives()
         });
 
-        this.camera.moveEnd.addEventListener( () => {
-            that.updateViewerParameters();
-            that.particleSystem.applyViewerParameters(that.viewerParameters);
-            that.scene.primitives.show = true;
+        this.scene.preRender.addEventListener(() => {
+            if (resized) {
+                that.particleSystem.canvasResize(that.scene.context);
+                resized = false;
+                that.addPrimitives();
+                !this.disableVisible && this.visible(true);
+            }
         });
-
-        // let resized = false;
-        // window.addEventListener("resize", () => {
-        //     resized = true;
-        //     that.scene.primitives.show = false;
-        //     that.scene.primitives.removeAll();
-        // });
-
-        // this.scene.preRender.addEventListener(() => {
-        //     if (resized) {
-        //         that.particleSystem.canvasResize(that.scene.context);
-        //         resized = false;
-        //         that.addPrimitives();
-        //         that.scene.primitives.show = true;
-        //     }
-        // });
 
         window.addEventListener('particleSystemOptionsChanged', () => {
             that.particleSystem.applyUserInput(that.panel.getUserInput());
         });
     }
+    throttle(func, wait) {
+        let timeout = null;
+        return function(...args) {
+            if (!timeout) {
+                timeout = setTimeout(() => {
+                    func.apply(this, args);
+                    timeout = null;
+                }, wait);
+            }
+        };
+    }
+    visible(visible) {
+        // the order of primitives.add() should respect the dependency of primitives
+        this.particleSystem.particlesComputing.primitives.calculateSpeed.show = visible;
+        this.particleSystem.particlesComputing.primitives.updatePosition.show = visible;
+        this.particleSystem.particlesComputing.primitives.postProcessingPosition.show = visible;
 
+        this.particleSystem.particlesRendering.primitives.segments.show = visible;
+        this.particleSystem.particlesRendering.primitives.trails.show = visible;
+        this.particleSystem.particlesRendering.primitives.screen.show = visible;
+    }
     debug() {
         const that = this;
         const animate = function () {

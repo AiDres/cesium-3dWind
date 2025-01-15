@@ -1,6 +1,6 @@
 import Util from './util'
 const Cesium = window.Cesium;
-const glslDirectory = '/static/glsl/';
+const glslDirectory = '/data/windy/glsl/';
 import CustomPrimitive from './customPrimitive'
 export default class ParticlesRendering {
     constructor(context, data, userInput, viewerParameters, particlesComputing) {

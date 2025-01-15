@@ -3,10 +3,10 @@ var demo = Cesium.defaultValue(demo, false);
 const defaultParticleSystemOptions = {
     maxParticles: 64 * 64,
     particleHeight: 100.0, // 粒子距离地面高度
-    fadeOpacity: 0.9, // 粒子透明度
+    fadeOpacity: 0.6, // 粒子透明度
     dropRate: 0.003, // 粒子掉落率
     dropRateBump: 0.01, 
-    speedFactor: 0.1, // 粒子速度
+    speedFactor: 1, // 粒子速度
     lineWidth: 4.0 // 粒子线宽
 }
 
